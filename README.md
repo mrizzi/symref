@@ -1,8 +1,8 @@
 # symref
 
-Symbolic variable storage and dereferencing for the [agent-sentinel](https://github.com/trustification/agent-sentinel) security framework.
+Symbolic variable storage and dereferencing.
 
-symref implements the **symbolic dereferencing** aspect of the Dual LLM pattern from the paper [Design Patterns for Securing LLM Agents against Prompt Injections](https://arxiv.org/abs/2501.16636). In this pattern, a privileged LLM works with opaque `$VAR` references rather than raw untrusted content. symref manages the variable store and performs substitution at execution time.
+symref implements the **symbolic dereferencing** aspect of the Dual LLM pattern from the paper [Design Patterns for Securing LLM Agents against Prompt Injections](https://arxiv.org/pdf/2506.08837). In this pattern, a privileged LLM works with opaque `$VAR` references rather than raw untrusted content. symref manages the variable store and performs substitution at execution time.
 
 **Key properties:**
 - **Deterministic** -- no LLM, no network, pure data transformation
@@ -31,7 +31,7 @@ symref exposes two subcommands: `store` and `deref`.
 ```bash
 symref store \
   --session /path/to/session-dir \
-  --prefix TC42 \
+  --prefix X7F \
   --input validated.json
 ```
 
@@ -53,9 +53,9 @@ symref assigns symbolic references and writes them to `<session-dir>/vars.json`:
 
 ```json
 {
-  "$TC42_REQ_1": {"id": "REQ_1", "summary": "OAuth2 login flow", "priority": "high"},
-  "$TC42_REQ_2": {"id": "REQ_2", "summary": "Session persistence", "priority": "medium"},
-  "$TC42_AC_1": {"id": "AC_1", "description": "Users can authenticate via OAuth2"}
+  "$X7F_REQ_1": {"id": "REQ_1", "summary": "OAuth2 login flow", "priority": "high"},
+  "$X7F_REQ_2": {"id": "REQ_2", "summary": "Session persistence", "priority": "medium"},
+  "$X7F_AC_1": {"id": "AC_1", "description": "Users can authenticate via OAuth2"}
 }
 ```
 
@@ -64,9 +64,9 @@ And outputs a summary to stdout:
 ```json
 {
   "refs": {
-    "$TC42_REQ_1": { "summary": "OAuth2 login flow", "ref": "$TC42_REQ_1" },
-    "$TC42_REQ_2": { "summary": "Session persistence", "ref": "$TC42_REQ_2" },
-    "$TC42_AC_1": { "summary": "Users can authenticate via OAuth2", "ref": "$TC42_AC_1" }
+    "$X7F_REQ_1": { "summary": "OAuth2 login flow", "ref": "$X7F_REQ_1" },
+    "$X7F_REQ_2": { "summary": "Session persistence", "ref": "$X7F_REQ_2" },
+    "$X7F_AC_1": { "summary": "Users can authenticate via OAuth2", "ref": "$X7F_AC_1" }
   },
   "store_path": "/path/to/session-dir/vars.json"
 }
@@ -75,7 +75,7 @@ And outputs a summary to stdout:
 Stdin also works:
 
 ```bash
-cat validated.json | symref store --session ./session --prefix TC42
+cat validated.json | symref store --session ./session --prefix X7F
 ```
 
 ### Deref: substitute references with stored values
@@ -91,7 +91,7 @@ Given this template:
 ```json
 {
   "summary": "Implement OAuth2 login",
-  "description": "## Acceptance Criteria\n- $TC42_AC_1\n\n## Requirements\n- $TC42_REQ_1"
+  "description": "## Acceptance Criteria\n- $X7F_AC_1\n\n## Requirements\n- $X7F_REQ_1"
 }
 ```
 
@@ -107,7 +107,7 @@ Output (concrete values substituted):
 Plain text works too:
 
 ```bash
-echo "Implement $TC42_REQ_1" | symref deref --session ./session
+echo "Implement $X7F_REQ_1" | symref deref --session ./session
 ```
 
 ### Naming convention
@@ -156,6 +156,10 @@ deref command:
 ```
 
 The [subst](https://docs.rs/subst) crate provides the `$VAR`/`${VAR}` substitution engine. symref wraps it with a file-backed variable store, a CLI interface, and the store/deref commands.
+
+## Acknowledgements
+
+symref is built on top of the [subst](https://crates.io/crates/subst) crate, which provides the `$VAR`/`${VAR}` substitution engine. Big thanks to its maintainers.
 
 ## License
 
