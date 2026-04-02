@@ -1,0 +1,9 @@
+{
+  "requirements": [
+    {"id": "REQ_1", "summary": "OAuth2 login flow", "priority": "high"},
+    {"id": "REQ_2", "summary": "Session persistence", "priority": "medium"}
+  ],
+  "acceptance_criteria": [
+    {"id": "AC_1", "description": "Users can authenticate via OAuth2"}
+  ]
+}

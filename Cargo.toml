@@ -1,0 +1,15 @@
+[package]
+name = "symref"
+version = "0.1.0"
+edition = "2021"
+description = "Symbolic variable storage and dereferencing for agent-sentinel"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+subst = { version = "0.3", features = ["json"] }
+
+[dev-dependencies]
+tempfile = "3"
