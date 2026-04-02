@@ -161,13 +161,13 @@ mod tests {
         }))
         .unwrap();
 
-        let (store, refs) = assign_refs("TC42", &input);
+        let (store, refs) = assign_refs("X7F", &input);
 
-        assert!(store.contains_key("$TC42_REQ_1"));
-        assert!(store.contains_key("$TC42_REQ_2"));
-        assert_eq!(refs["$TC42_REQ_1"].summary, "OAuth2 login flow");
-        assert_eq!(refs["$TC42_REQ_2"].summary, "Session persistence");
-        assert_eq!(refs["$TC42_REQ_1"].var_ref, "$TC42_REQ_1");
+        assert!(store.contains_key("$X7F_REQ_1"));
+        assert!(store.contains_key("$X7F_REQ_2"));
+        assert_eq!(refs["$X7F_REQ_1"].summary, "OAuth2 login flow");
+        assert_eq!(refs["$X7F_REQ_2"].summary, "Session persistence");
+        assert_eq!(refs["$X7F_REQ_1"].var_ref, "$X7F_REQ_1");
     }
 
     #[test]
@@ -177,11 +177,11 @@ mod tests {
         }))
         .unwrap();
 
-        let (store, refs) = assign_refs("TC42", &input);
+        let (store, refs) = assign_refs("X7F", &input);
 
-        assert!(store.contains_key("$TC42_BACKGROUND"));
+        assert!(store.contains_key("$X7F_BACKGROUND"));
         assert_eq!(
-            refs["$TC42_BACKGROUND"].summary,
+            refs["$X7F_BACKGROUND"].summary,
             "Implement user authentication"
         );
     }
@@ -195,11 +195,11 @@ mod tests {
         }))
         .unwrap();
 
-        let (store, refs) = assign_refs("TC42", &input);
+        let (store, refs) = assign_refs("X7F", &input);
 
-        assert!(store.contains_key("$TC42_AC_1"));
+        assert!(store.contains_key("$X7F_AC_1"));
         assert_eq!(
-            refs["$TC42_AC_1"].summary,
+            refs["$X7F_AC_1"].summary,
             "Users can authenticate via OAuth2"
         );
     }

@@ -2,7 +2,7 @@
 name = "symref"
 version = "0.1.0"
 edition = "2021"
-description = "Symbolic variable storage and dereferencing for agent-sentinel"
+description = "Symbolic variable storage and dereferencing"
 
 [dependencies]
 anyhow = "1"

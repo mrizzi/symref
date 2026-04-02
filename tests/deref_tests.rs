@@ -67,11 +67,11 @@ fn roundtrip_json_substitution() {
 
     let deref_input = serde_json::to_string_pretty(&json!({
         "summary": "Implement OAuth2 login",
-        "description": "## Acceptance Criteria\n- $TC42_AC_1\n\n## Requirements\n- $TC42_REQ_1"
+        "description": "## Acceptance Criteria\n- $X7F_AC_1\n\n## Requirements\n- $X7F_REQ_1"
     }))
     .unwrap();
 
-    let output = store_then_deref(session.path(), "TC42", &store_input, &deref_input);
+    let output = store_then_deref(session.path(), "X7F", &store_input, &deref_input);
 
     assert!(
         output.status.success(),
@@ -628,7 +628,7 @@ fn full_pipeline_store_fixtures_then_deref_fixtures() {
             "--session",
             session.path().to_str().unwrap(),
             "--prefix",
-            "TC42",
+            "X7F",
             "--input",
             concat!(env!("CARGO_MANIFEST_DIR"), "/tests/fixtures/validated.json"),
         ])

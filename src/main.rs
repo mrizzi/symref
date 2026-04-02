@@ -23,7 +23,7 @@ enum Commands {
         #[arg(long)]
         session: PathBuf,
 
-        /// Prefix for generated variable names (e.g. TC42)
+        /// Prefix for generated variable names (e.g. X7F)
         #[arg(long)]
         prefix: String,
 
