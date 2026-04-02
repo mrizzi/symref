@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "if": "Bash(git commit:*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cargo +nightly fmt --check && RUSTFLAGS=\"-D warnings\" cargo check && cargo clippy -- -D warnings && RUSTFLAGS=\"-D warnings\" cargo test",
+            "timeout": 120,
+            "statusMessage": "Running pre-commit checks (fmt, check, clippy, test)..."
+          }
+        ]
+      }
+    ]
+  }
+}
