@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `symref` is a Rust CLI tool for symbolic variable storage and dereferencing. It stores validated key-value pairs as symbolic `$VAR` references in a session-scoped JSON file, and substitutes those references in text or JSON content on demand.
 
-symref is a component of the **agent-sentinel** security framework, implementing the **symbolic dereferencing** aspect of the Dual LLM pattern from the "Design Patterns for Securing LLM Agents against Prompt Injections" paper. In this pattern, a privileged LLM works with opaque `$VAR` references rather than raw untrusted content. symref manages the variable store and performs substitution at execution time.
+symref implements the **symbolic dereferencing** aspect of the Dual LLM pattern from the "Design Patterns for Securing LLM Agents against Prompt Injections" paper. In this pattern, a privileged LLM works with opaque `$VAR` references rather than raw untrusted content. symref manages the variable store and performs substitution at execution time.
 
 **Key properties:**
 - Deterministic — no LLM, no network, pure data transformation
@@ -50,11 +50,11 @@ Reads a validated JSON object from a file (or stdin), assigns symbolic `$PREFIX_
 ```bash
 symref store \
   --session /path/to/session-dir \
-  --prefix TC42 \
+  --prefix X7F \
   --input validated.json
 
 # Or from stdin:
-cat validated.json | symref store --session /path/to/session-dir --prefix TC42
+cat validated.json | symref store --session /path/to/session-dir --prefix X7F
 ```
 
 **Input** (validated.json — flat or nested JSON object):
@@ -74,17 +74,17 @@ cat validated.json | symref store --session /path/to/session-dir --prefix TC42
 ```json
 {
   "refs": {
-    "$TC42_REQ_1": {
+    "$X7F_REQ_1": {
       "summary": "OAuth2 login flow",
-      "ref": "$TC42_REQ_1"
+      "ref": "$X7F_REQ_1"
     },
-    "$TC42_REQ_2": {
+    "$X7F_REQ_2": {
       "summary": "Session persistence",
-      "ref": "$TC42_REQ_2"
+      "ref": "$X7F_REQ_2"
     },
-    "$TC42_AC_1": {
+    "$X7F_AC_1": {
       "summary": "Users can authenticate via OAuth2",
-      "ref": "$TC42_AC_1"
+      "ref": "$X7F_AC_1"
     }
   },
   "store_path": "/path/to/session-dir/vars.json"
@@ -94,18 +94,18 @@ cat validated.json | symref store --session /path/to/session-dir --prefix TC42
 **Side effect**: appends entries to `<session-dir>/vars.json`:
 ```json
 {
-  "$TC42_REQ_1": {"id": "REQ_1", "summary": "OAuth2 login flow", "priority": "high"},
-  "$TC42_REQ_2": {"id": "REQ_2", "summary": "Session persistence", "priority": "medium"},
-  "$TC42_AC_1": {"id": "AC_1", "description": "Users can authenticate via OAuth2"}
+  "$X7F_REQ_1": {"id": "REQ_1", "summary": "OAuth2 login flow", "priority": "high"},
+  "$X7F_REQ_2": {"id": "REQ_2", "summary": "Session persistence", "priority": "medium"},
+  "$X7F_AC_1": {"id": "AC_1", "description": "Users can authenticate via OAuth2"}
 }
 ```
 
 **Naming convention**: `$PREFIX_ARRAYFIELD_N` where:
-- `PREFIX` comes from `--prefix` (e.g., `TC42`)
+- `PREFIX` comes from `--prefix` (e.g., `X7F`)
 - `ARRAYFIELD` is the JSON array field name uppercased (e.g., `requirements` → `REQ`, `acceptance_criteria` → `AC`)
 - `N` is the 1-based index within the array
 
-For non-array fields, the reference is `$PREFIX_FIELD` (e.g., `$TC42_BACKGROUND` for a `background` string field).
+For non-array fields, the reference is `$PREFIX_FIELD` (e.g., `$X7F_BACKGROUND` for a `background` string field).
 
 ### `symref deref`
 
@@ -117,14 +117,14 @@ symref deref \
   --input template.json
 
 # Or from stdin:
-echo "Implement $TC42_REQ_1" | symref deref --session /path/to/session-dir
+echo "Implement $X7F_REQ_1" | symref deref --session /path/to/session-dir
 ```
 
 **Input** (template.json — JSON with $VAR references):
 ```json
 {
   "summary": "Implement OAuth2 login",
-  "description": "## Acceptance Criteria\n- $TC42_AC_1\n\n## Requirements\n- $TC42_REQ_1"
+  "description": "## Acceptance Criteria\n- $X7F_AC_1\n\n## Requirements\n- $X7F_REQ_1"
 }
 ```
 
@@ -236,10 +236,10 @@ The store is a flat JSON object. Keys are `$VAR` names (including the `$` prefix
 
 ```json
 {
-  "$TC42_REQ_1": {"id": "REQ_1", "summary": "OAuth2 login flow", "priority": "high"},
-  "$TC42_REQ_2": {"id": "REQ_2", "summary": "Session persistence", "priority": "medium"},
-  "$TC42_AC_1": {"id": "AC_1", "description": "Users can authenticate via OAuth2"},
-  "$TC42_BACKGROUND": "Implement user authentication for the platform"
+  "$X7F_REQ_1": {"id": "REQ_1", "summary": "OAuth2 login flow", "priority": "high"},
+  "$X7F_REQ_2": {"id": "REQ_2", "summary": "Session persistence", "priority": "medium"},
+  "$X7F_AC_1": {"id": "AC_1", "description": "Users can authenticate via OAuth2"},
+  "$X7F_BACKGROUND": "Implement user authentication for the platform"
 }
 ```
 

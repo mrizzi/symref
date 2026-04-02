@@ -29,7 +29,7 @@ fn store_from_file_creates_vars_and_outputs_refs() {
             "--session",
             session.path().to_str().unwrap(),
             "--prefix",
-            "TC42",
+            "X7F",
             "--input",
             input_path.to_str().unwrap(),
         ])
@@ -45,27 +45,24 @@ fn store_from_file_creates_vars_and_outputs_refs() {
     let result: Value = serde_json::from_slice(&output.stdout).unwrap();
 
     // Check refs in output
+    assert_eq!(result["refs"]["$X7F_REQ_1"]["summary"], "OAuth2 login flow");
     assert_eq!(
-        result["refs"]["$TC42_REQ_1"]["summary"],
-        "OAuth2 login flow"
-    );
-    assert_eq!(
-        result["refs"]["$TC42_REQ_2"]["summary"],
+        result["refs"]["$X7F_REQ_2"]["summary"],
         "Session persistence"
     );
     assert_eq!(
-        result["refs"]["$TC42_AC_1"]["summary"],
+        result["refs"]["$X7F_AC_1"]["summary"],
         "Users can authenticate via OAuth2"
     );
-    assert_eq!(result["refs"]["$TC42_REQ_1"]["ref"], "$TC42_REQ_1");
+    assert_eq!(result["refs"]["$X7F_REQ_1"]["ref"], "$X7F_REQ_1");
 
     // Check vars.json was created with correct content
     let vars_path = session.path().join("vars.json");
     assert!(vars_path.exists());
     let vars: Value = serde_json::from_str(&fs::read_to_string(&vars_path).unwrap()).unwrap();
-    assert_eq!(vars["$TC42_REQ_1"]["summary"], "OAuth2 login flow");
+    assert_eq!(vars["$X7F_REQ_1"]["summary"], "OAuth2 login flow");
     assert_eq!(
-        vars["$TC42_AC_1"]["description"],
+        vars["$X7F_AC_1"]["description"],
         "Users can authenticate via OAuth2"
     );
 }
@@ -87,7 +84,7 @@ fn store_scalar_field() {
             "--session",
             session.path().to_str().unwrap(),
             "--prefix",
-            "TC42",
+            "X7F",
             "--input",
             input_path.to_str().unwrap(),
         ])
@@ -98,7 +95,7 @@ fn store_scalar_field() {
 
     let result: Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(
-        result["refs"]["$TC42_BACKGROUND"]["summary"],
+        result["refs"]["$X7F_BACKGROUND"]["summary"],
         "Implement user authentication for the platform"
     );
 
@@ -106,7 +103,7 @@ fn store_scalar_field() {
         serde_json::from_str(&fs::read_to_string(session.path().join("vars.json")).unwrap())
             .unwrap();
     assert_eq!(
-        vars["$TC42_BACKGROUND"],
+        vars["$X7F_BACKGROUND"],
         "Implement user authentication for the platform"
     );
 }

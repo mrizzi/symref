@@ -56,20 +56,17 @@ mod tests {
 
     #[test]
     fn array_var_name_simple() {
-        assert_eq!(array_var_name("TC42", "requirements", 1), "$TC42_REQ_1");
+        assert_eq!(array_var_name("X7F", "requirements", 1), "$X7F_REQ_1");
     }
 
     #[test]
     fn array_var_name_multi_word() {
-        assert_eq!(
-            array_var_name("TC42", "acceptance_criteria", 1),
-            "$TC42_AC_1"
-        );
+        assert_eq!(array_var_name("X7F", "acceptance_criteria", 1), "$X7F_AC_1");
     }
 
     #[test]
     fn scalar_var_name_simple() {
-        assert_eq!(scalar_var_name("TC42", "background"), "$TC42_BACKGROUND");
+        assert_eq!(scalar_var_name("X7F", "background"), "$X7F_BACKGROUND");
     }
 
     #[test]
@@ -122,11 +119,11 @@ mod tests {
 
     #[test]
     fn scalar_var_name_mixed_case() {
-        assert_eq!(scalar_var_name("TC42", "myField"), "$TC42_MYFIELD");
+        assert_eq!(scalar_var_name("X7F", "myField"), "$X7F_MYFIELD");
     }
 
     #[test]
     fn scalar_var_name_already_uppercase() {
-        assert_eq!(scalar_var_name("TC42", "STATUS"), "$TC42_STATUS");
+        assert_eq!(scalar_var_name("X7F", "STATUS"), "$X7F_STATUS");
     }
 }

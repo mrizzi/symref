@@ -96,20 +96,20 @@ mod tests {
     #[test]
     fn build_var_map_strips_dollar_prefix() {
         let mut store = VarStore::new();
-        store.insert("$TC42_REQ_1".into(), json!("OAuth2 login flow"));
+        store.insert("$X7F_REQ_1".into(), json!("OAuth2 login flow"));
         let map = build_var_map(&store);
-        assert_eq!(map.inner.get("TC42_REQ_1").unwrap(), "OAuth2 login flow");
+        assert_eq!(map.inner.get("X7F_REQ_1").unwrap(), "OAuth2 login flow");
     }
 
     #[test]
     fn build_var_map_extracts_summary_from_object() {
         let mut store = VarStore::new();
         store.insert(
-            "$TC42_REQ_1".into(),
+            "$X7F_REQ_1".into(),
             json!({"id": "REQ_1", "summary": "OAuth2 login flow", "priority": "high"}),
         );
         let map = build_var_map(&store);
-        assert_eq!(map.inner.get("TC42_REQ_1").unwrap(), "OAuth2 login flow");
+        assert_eq!(map.inner.get("X7F_REQ_1").unwrap(), "OAuth2 login flow");
     }
 
     #[test]
