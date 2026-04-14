@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -18,5 +19,5 @@ pub struct VarRef {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct StoreOutput {
     pub refs: HashMap<String, VarRef>,
-    pub store_path: String,
+    pub store_path: PathBuf,
 }
