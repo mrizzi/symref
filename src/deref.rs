@@ -40,6 +40,32 @@ fn build_var_map(store: &VarStore) -> LenientVarMap {
     LenientVarMap { inner }
 }
 
+/// Library API: substitute `$VAR` references in a JSON value.
+///
+/// Loads `vars.json` from the session directory, builds a variable map,
+/// and substitutes all `$VAR` references in string values within the input.
+/// Unresolved references are left as-is with a warning on stderr.
+pub fn deref(session: &Path, input: &Value) -> Result<Value> {
+    let store_path = session.join("vars.json");
+    if !store_path.exists() {
+        anyhow::bail!(
+            "vars.json not found in session directory: {}. Run 'symref store' first.",
+            session.display()
+        );
+    }
+
+    let store_data = fs::read_to_string(&store_path).context("failed to read vars.json")?;
+    let store: VarStore = serde_json::from_str(&store_data).context("failed to parse vars.json")?;
+
+    let var_map = build_var_map(&store);
+
+    let mut json_value = input.clone();
+    subst::json::substitute_string_values(&mut json_value, &var_map)
+        .map_err(|e| anyhow::anyhow!("substitution error: {}", e))?;
+
+    Ok(json_value)
+}
+
 /// Run the deref command.
 pub fn run(session: &Path, input_path: Option<&Path>) -> Result<()> {
     let store_path = session.join("vars.json");
@@ -284,5 +310,30 @@ mod tests {
         assert_eq!(value["count"], 42);
         assert_eq!(value["active"], true);
         assert!(value["nothing"].is_null());
+    }
+
+    #[test]
+    fn deref_via_library_api() {
+        let dir = tempfile::tempdir().unwrap();
+
+        // Create vars.json with test data
+        let mut var_store = VarStore::new();
+        var_store.insert("$X7F_REQ_1".into(), json!("OAuth2 login flow"));
+        var_store.insert("$X7F_BACKGROUND".into(), json!("Implement auth"));
+        let vars_json = serde_json::to_string_pretty(&var_store).unwrap();
+        fs::write(dir.path().join("vars.json"), &vars_json).unwrap();
+
+        let input = json!({
+            "issueKey": "TC-42",
+            "description": "Implementing $X7F_REQ_1 with $X7F_BACKGROUND"
+        });
+
+        let result = deref(dir.path(), &input).unwrap();
+
+        assert_eq!(result["issueKey"], "TC-42");
+        assert_eq!(
+            result["description"],
+            "Implementing OAuth2 login flow with Implement auth"
+        );
     }
 }
