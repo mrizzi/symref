@@ -97,10 +97,7 @@ pub fn store(session: &Path, prefix: &str, input: &Map<String, Value>) -> Result
         serde_json::to_string_pretty(&var_store).context("failed to serialize var store")?;
     fs::write(&store_path, store_json).context("failed to write vars.json")?;
 
-    Ok(StoreOutput {
-        refs,
-        store_path: store_path.to_string_lossy().into_owned(),
-    })
+    Ok(StoreOutput { refs, store_path })
 }
 
 /// CLI entry point: reads input from stdin/file, calls store(), prints result.
@@ -403,12 +400,16 @@ mod tests {
         // Verify refs are returned
         assert_eq!(output.refs["$X7F_REQ_1"].summary, "OAuth2 login flow");
         assert_eq!(output.refs["$X7F_REQ_2"].summary, "Session persistence");
-        assert_eq!(output.refs["$X7F_BACKGROUND"].summary, "Implement user authentication");
+        assert_eq!(
+            output.refs["$X7F_BACKGROUND"].summary,
+            "Implement user authentication"
+        );
 
         // Verify vars.json was written
         let vars_path = dir.path().join("vars.json");
         assert!(vars_path.exists());
-        let store_data: VarStore = serde_json::from_str(&std::fs::read_to_string(&vars_path).unwrap()).unwrap();
+        let store_data: VarStore =
+            serde_json::from_str(&std::fs::read_to_string(&vars_path).unwrap()).unwrap();
         assert_eq!(store_data["$X7F_REQ_1"]["summary"], "OAuth2 login flow");
     }
 

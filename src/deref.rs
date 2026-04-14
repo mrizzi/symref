@@ -40,23 +40,31 @@ fn build_var_map(store: &VarStore) -> LenientVarMap {
     LenientVarMap { inner }
 }
 
+/// Load the variable store from the session directory.
+fn load_var_store(session: &Path) -> Result<VarStore> {
+    let store_path = session.join("vars.json");
+
+    let store_data = match fs::read_to_string(&store_path) {
+        Ok(data) => data,
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            anyhow::bail!(
+                "vars.json not found in session directory: {}",
+                session.display()
+            );
+        }
+        Err(e) => return Err(e).context("failed to read vars.json"),
+    };
+
+    serde_json::from_str(&store_data).context("failed to parse vars.json")
+}
+
 /// Library API: substitute `$VAR` references in a JSON value.
 ///
 /// Loads `vars.json` from the session directory, builds a variable map,
 /// and substitutes all `$VAR` references in string values within the input.
 /// Unresolved references are left as-is with a warning on stderr.
 pub fn deref(session: &Path, input: &Value) -> Result<Value> {
-    let store_path = session.join("vars.json");
-    if !store_path.exists() {
-        anyhow::bail!(
-            "vars.json not found in session directory: {}. Run 'symref store' first.",
-            session.display()
-        );
-    }
-
-    let store_data = fs::read_to_string(&store_path).context("failed to read vars.json")?;
-    let store: VarStore = serde_json::from_str(&store_data).context("failed to parse vars.json")?;
-
+    let store = load_var_store(session)?;
     let var_map = build_var_map(&store);
 
     let mut json_value = input.clone();
@@ -68,17 +76,6 @@ pub fn deref(session: &Path, input: &Value) -> Result<Value> {
 
 /// Run the deref command.
 pub fn run(session: &Path, input_path: Option<&Path>) -> Result<()> {
-    let store_path = session.join("vars.json");
-    if !store_path.exists() {
-        anyhow::bail!(
-            "vars.json not found in session directory: {}. Run 'symref store' first.",
-            session.display()
-        );
-    }
-
-    let store_data = fs::read_to_string(&store_path).context("failed to read vars.json")?;
-    let store: VarStore = serde_json::from_str(&store_data).context("failed to parse vars.json")?;
-
     let input_text = match input_path {
         Some(path) => {
             fs::read_to_string(path).with_context(|| format!("failed to read {}", path.display()))
@@ -92,14 +89,13 @@ pub fn run(session: &Path, input_path: Option<&Path>) -> Result<()> {
         }
     }?;
 
-    let var_map = build_var_map(&store);
-
-    // Try JSON first; fall back to plain text.
-    let output = if let Ok(mut json_value) = serde_json::from_str::<Value>(&input_text) {
-        subst::json::substitute_string_values(&mut json_value, &var_map)
-            .map_err(|e| anyhow::anyhow!("substitution error: {}", e))?;
-        serde_json::to_string_pretty(&json_value).context("failed to serialize output")?
+    // Try JSON first (delegates to library API); fall back to plain text.
+    let output = if let Ok(json_value) = serde_json::from_str::<Value>(&input_text) {
+        let result = deref(session, &json_value)?;
+        serde_json::to_string_pretty(&result).context("failed to serialize output")?
     } else {
+        let store = load_var_store(session)?;
+        let var_map = build_var_map(&store);
         subst::substitute(&input_text, &var_map)
             .map_err(|e| anyhow::anyhow!("substitution error: {}", e))?
     };
