@@ -1,7 +1,5 @@
-mod deref;
-mod naming;
-mod store;
-mod types;
+use symref::deref;
+use symref::store;
 
 use std::path::PathBuf;
 
@@ -19,26 +17,18 @@ struct Cli {
 enum Commands {
     /// Ingest validated JSON, assign symbolic $VAR references, and store in vars.json
     Store {
-        /// Path to the session directory
         #[arg(long)]
         session: PathBuf,
-
-        /// Prefix for generated variable names (e.g. X7F)
         #[arg(long)]
         prefix: String,
-
-        /// Path to input JSON file (reads from stdin if omitted)
         #[arg(long)]
         input: Option<PathBuf>,
     },
 
     /// Substitute $VAR references in text or JSON with stored values
     Deref {
-        /// Path to the session directory
         #[arg(long)]
         session: PathBuf,
-
-        /// Path to input file (reads from stdin if omitted)
         #[arg(long)]
         input: Option<PathBuf>,
     },

@@ -4,9 +4,21 @@ version = "0.1.0"
 edition = "2021"
 description = "Symbolic variable storage and dereferencing"
 
+[lib]
+name = "symref"
+path = "src/lib.rs"
+
+[[bin]]
+name = "symref"
+path = "src/main.rs"
+required-features = ["cli"]
+
+[features]
+cli = ["dep:clap"]
+
 [dependencies]
 anyhow = "1"
-clap = { version = "4", features = ["derive"] }
+clap = { version = "4", features = ["derive"], optional = true }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 subst = { version = "0.3", features = ["json"] }
