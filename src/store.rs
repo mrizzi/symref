@@ -81,12 +81,30 @@ fn load_store(path: &Path) -> Result<VarStore> {
     }
 }
 
-/// Run the store command.
-pub fn run(session: &Path, prefix: &str, input_path: Option<&Path>) -> Result<()> {
+/// Library API: assign symbolic references and persist to session store.
+pub fn store(session: &Path, prefix: &str, input: &Map<String, Value>) -> Result<StoreOutput> {
     if !session.exists() {
         anyhow::bail!("session directory does not exist: {}", session.display());
     }
 
+    let (new_entries, refs) = assign_refs(prefix, input);
+
+    let store_path = session.join("vars.json");
+    let mut var_store = load_store(&store_path)?;
+    var_store.extend(new_entries);
+
+    let store_json =
+        serde_json::to_string_pretty(&var_store).context("failed to serialize var store")?;
+    fs::write(&store_path, store_json).context("failed to write vars.json")?;
+
+    Ok(StoreOutput {
+        refs,
+        store_path: store_path.to_string_lossy().into_owned(),
+    })
+}
+
+/// CLI entry point: reads input from stdin/file, calls store(), prints result.
+pub fn run(session: &Path, prefix: &str, input_path: Option<&Path>) -> Result<()> {
     let input_text = match input_path {
         Some(path) => {
             fs::read_to_string(path).with_context(|| format!("failed to read {}", path.display()))
@@ -103,20 +121,8 @@ pub fn run(session: &Path, prefix: &str, input_path: Option<&Path>) -> Result<()
     let input: Map<String, Value> =
         serde_json::from_str(&input_text).context("input is not a valid JSON object")?;
 
-    let (new_entries, refs) = assign_refs(prefix, &input);
+    let output = store(session, prefix, &input)?;
 
-    let store_path = session.join("vars.json");
-    let mut store = load_store(&store_path)?;
-    store.extend(new_entries);
-
-    let store_json =
-        serde_json::to_string_pretty(&store).context("failed to serialize var store")?;
-    fs::write(&store_path, store_json).context("failed to write vars.json")?;
-
-    let output = StoreOutput {
-        refs,
-        store_path: store_path.to_string_lossy().into_owned(),
-    };
     let output_json =
         serde_json::to_string_pretty(&output).context("failed to serialize output")?;
     println!("{}", output_json);
@@ -378,6 +384,32 @@ mod tests {
         assert_eq!(store.len(), 2);
         assert_eq!(store["$RT_ITE_1"]["summary"], "alpha");
         assert_eq!(store["$RT_ITE_2"]["summary"], "beta");
+    }
+
+    #[test]
+    fn store_via_library_api() {
+        let dir = tempfile::tempdir().unwrap();
+        let input: Map<String, Value> = serde_json::from_value(json!({
+            "requirements": [
+                {"id": "REQ_1", "summary": "OAuth2 login flow"},
+                {"id": "REQ_2", "summary": "Session persistence"}
+            ],
+            "background": "Implement user authentication"
+        }))
+        .unwrap();
+
+        let output = store(dir.path(), "X7F", &input).unwrap();
+
+        // Verify refs are returned
+        assert_eq!(output.refs["$X7F_REQ_1"].summary, "OAuth2 login flow");
+        assert_eq!(output.refs["$X7F_REQ_2"].summary, "Session persistence");
+        assert_eq!(output.refs["$X7F_BACKGROUND"].summary, "Implement user authentication");
+
+        // Verify vars.json was written
+        let vars_path = dir.path().join("vars.json");
+        assert!(vars_path.exists());
+        let store_data: VarStore = serde_json::from_str(&std::fs::read_to_string(&vars_path).unwrap()).unwrap();
+        assert_eq!(store_data["$X7F_REQ_1"]["summary"], "OAuth2 login flow");
     }
 
     #[test]
